@@ -51,8 +51,6 @@ namespace Magic.Unity
         [MenuItem("MAGIC/Compiler...")]
         static void Init()
         {
-            RuntimeBootstrapFlag.SkipSpecChecks = true;
-            RuntimeBootstrapFlag._startDefaultServer = false;
             EditorWindow.GetWindow<Window>().Show();
         }
 
@@ -98,6 +96,8 @@ namespace Magic.Unity
 
         void OnEnable()
         {
+            RuntimeBootstrapFlag.SkipSpecChecks = true;
+            RuntimeBootstrapFlag._startDefaultServer = false;
             RT.var("clojure.core", "require").invoke(Symbol.intern("magic.api"));
             MagicCompilerNamespaceVar = RT.var("magic.api", "compile-namespace");
             EditorJsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EditorPerfsKey), this);
