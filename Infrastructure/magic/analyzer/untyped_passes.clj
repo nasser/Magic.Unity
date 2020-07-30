@@ -1,5 +1,5 @@
 (ns magic.analyzer.untyped-passes
-  (:require
+  (:require 
    [clojure.tools.analyzer.passes :refer [schedule]]
    [clojure.tools.analyzer.ast :refer [nodes children update-children]]
    [clojure.tools.analyzer.passes

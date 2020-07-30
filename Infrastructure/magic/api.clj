@@ -19,6 +19,26 @@
 (def public-static (enum-or MethodAttributes/Public MethodAttributes/Static))
 (def abstract-sealed (enum-or TypeAttributes/Public TypeAttributes/Abstract TypeAttributes/Sealed))
 
+(defn eval [expr]
+  (binding [*module* (fresh-module "eval")]
+    (let [ast (ana/analyze expr)
+          bc (magic/compile ast)
+          type-name (str (u/gensym "<magic-eval>"))]
+      (->> (il/type
+            type-name
+            (il/method
+             "eval"
+             public-static
+             Object []
+             [bc
+              (magic/convert ast Object)
+              (il/ret)]))
+           (il/emit! {::il/module-builder *module*}))
+      (-> *module*
+          (.GetType type-name)
+          (.GetMethod "eval")
+          (.Invoke nil empty-args)))))
+
 (defn bind-spells! [spells]
   (alter-var-root #'magic/*spells* (constantly spells)))
 
@@ -136,21 +156,6 @@
     :else
     (compile-expression expr roots ctx)))
 
-(defn eval [expr]
-  (binding [*module* (fresh-module "eval")]
-    (let [type-name (str (u/gensym "<magic-eval>"))
-          ns-type (.DefineType magic.emission/*module* type-name abstract-sealed)
-          init-method (.DefineMethod ns-type "eval" public-static)
-          init-ilg (.GetILGenerator init-method)
-          ctx {::il/module-builder magic.emission/*module*
-               ::il/type-builder ns-type
-               ::il/method-builder init-method
-               ::il/ilg init-ilg}]
-      (compile-expression-top-level expr [] ctx)
-      #_ (.Emit init-ilg )
-      #_ (.CreateType ns-type)
-      #_ (.Invoke (.GetMethod ns-type "eval") nil empty-args))))
-
 (defn load-file
   [roots path ctx]
   (let [file (System.IO.File/OpenText path)]
@@ -200,6 +205,7 @@
         (println "[compile-file] end" path "(skipped, module already exists, loaded instead)"))
       (binding [*print-meta* false
                 *ns* *ns*
+                *file* path
                 magic.emission/*module* (magic.emission/fresh-module module-name)]
         (let [type-name (clojure-clr-init-class-name module)
               ns-type (.DefineType magic.emission/*module* type-name abstract-sealed)

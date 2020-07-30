@@ -207,13 +207,11 @@
          (.IsAssignableFrom to from))
     [(reference-to-type from)
      (il/box from)]
-
+    
     (.IsAssignableFrom to from)
-    (il/castclass to)
+    nil
 
     (.IsAssignableFrom from to)
-    ;; is this backwards?
-    ;; should this be nil?
     (il/castclass to)
 
     ;; emit ToString when possible
