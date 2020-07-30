@@ -51,7 +51,7 @@ namespace Magic.Unity
         [MenuItem("MAGIC/Compiler...")]
         static void Init()
         {
-            Environment.SetEnvironmentVariable("CLOJURE_SPEC_SKIP_MACROS", "true");
+            RuntimeBootstrapFlag.SkipSpecChecks = true;
             RuntimeBootstrapFlag._startDefaultServer = false;
             EditorWindow.GetWindow<Window>().Show();
         }
