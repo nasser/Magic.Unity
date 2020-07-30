@@ -51,6 +51,7 @@ namespace Magic.Unity
         [MenuItem("MAGIC/Compiler...")]
         static void Init()
         {
+            RuntimeBootstrapFlag._startDefaultServer = false;
             EditorWindow.GetWindow<Window>().Show();
         }
 
