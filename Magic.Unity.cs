@@ -61,53 +61,50 @@ namespace Magic.Unity
             RequireVar.invoke(Symbol.intern(ns));
         }
 
-        /// <summary>
-        /// Experimental features of the integration
-        /// </summary>
-        public static class Alpha
+#region Experimental API
+
+        public static Func<T> GetFunc<T>(Var v)
         {
-            public static Func<T> GetFunc<T>(Var v)
+            var f = v.deref() as Magic.Function<T>;
+            if (f != null)
             {
-                var f = v.deref() as Magic.Function<T>;
-                if (f != null)
-                {
-                    return new Func<T>(f.invokeTyped);
-                }
-
-                throw new ArgumentException("var " + v.ToString() + " is not a Magic.Function", "v");
+                return new Func<T>(f.invokeTyped);
             }
 
-            public static Func<T, V> GetFunc<T, V>(string ns, string name)
-            {
-                return GetFunc<T, V>(Clojure.GetVar(ns, name));
-            }
-
-            public static Func<T, V> GetFunc<T, V>(Var v)
-            {
-                var f = v.deref() as Magic.Function<V, T>;
-                if (f != null)
-                {
-                    return new Func<T, V>(f.invokeTyped);
-                }
-
-                throw new ArgumentException("var " + v.ToString() + " is not a Magic.Function", "v");
-            }
-
-            public static Action<T> GetAction<T>(string ns, string name)
-            {
-                return GetAction<T>(Clojure.GetVar(ns, name));
-            }
-
-            public static Action<T> GetAction<T>(Var v)
-            {
-                var f = v.deref() as Magic.Function<object, T>;
-                if (f != null)
-                {
-                    return new Action<T>(t => f.invokeTyped(t));
-                }
-
-                throw new ArgumentException("var " + v.ToString() + " is not a Magic.Function", "v");
-            }
+            throw new ArgumentException("var " + v.ToString() + " is not a Magic.Function", "v");
         }
+
+        public static Func<T, V> GetFunc<T, V>(string ns, string name)
+        {
+            return GetFunc<T, V>(Clojure.GetVar(ns, name));
+        }
+
+        public static Func<T, V> GetFunc<T, V>(Var v)
+        {
+            var f = v.deref() as Magic.Function<V, T>;
+            if (f != null)
+            {
+                return new Func<T, V>(f.invokeTyped);
+            }
+
+            throw new ArgumentException("var " + v.ToString() + " is not a Magic.Function", "v");
+        }
+
+        public static Action<T> GetAction<T>(string ns, string name)
+        {
+            return GetAction<T>(Clojure.GetVar(ns, name));
+        }
+
+        public static Action<T> GetAction<T>(Var v)
+        {
+            var f = v.deref() as Magic.Function<object, T>;
+            if (f != null)
+            {
+                return new Action<T>(t => f.invokeTyped(t));
+            }
+
+            throw new ArgumentException("var " + v.ToString() + " is not a Magic.Function", "v");
+        }
+#endregion
     }
 }
