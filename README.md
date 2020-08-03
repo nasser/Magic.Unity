@@ -42,7 +42,7 @@ API
 ---
 This repository exposes its own API into the Clojure runtime in addition to the API provided by ClojureCLR (under the `clojure.lang.*` namespaces). When possible, our APIs should be preferred over the ClojureCLR APIs because they take into consideration Unity-specific issues.
 
-The stable API is under the `Magic.Unity.Clojure` namespace. The experimental API is under the `Magic.Unity.Clojure.Alpha` namespace.
+The API is contained within the `Magic.Unity.Clojure` static class.
 
 ### `void Magic.Unity.Clojure.Require(string ns)`
 
