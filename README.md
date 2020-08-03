@@ -18,6 +18,26 @@ This integration offers an AOT based workflow to integrate Clojure into Unity. T
 7. Playing in the editor and exporting work as expected
 8. If you change your Clojure source repeat step 5
 
+User Interface
+--------------
+![](https://user-images.githubusercontent.com/412966/89140098-a3a55000-d50e-11ea-9e20-f382b8d39387.png)
+
+This integration exposed the MAGIC compiler through a Unity editor window. This window can be opened from the main Unity menu by navigating to MAGIC > Compiler... It presents the following elements
+
+**Class Path** A list of paths to treat as the class path when compiling. These are the folders in which searches for namespaces begin. They are relative to the Unity project folder (the folder that contains the Assets folder). Entries can be removed with the `-` button to their right and new entries can be added with the large `+` button at the bottom of the section.
+
+In the screenshot above "Assets" is the sole entry (the Assets folder is not currently added to the class path by default), indicating that searches for namespaces should begin in the Assets folder.
+
+**Namespaces** A list of Clojure namespaces to compile. Each namespace will recursively compile its dependencies, so you only need to list "root" namespaces here.
+
+In the screenshot above the "boids" is the sole entry, indicating that the boids namespace and all its dependencies should be compiled.
+
+**Advanced** The Advanced section exposes aspects of the compiler not commonly needed. These include the output folder of the compiled namespaces, verbose compilation, and control over [`link.xml`](https://docs.unity3d.com/Manual/ManagedCodeStripping.html#LinkXML).
+
+**Compile** Pressing the compile button will cause MAGIC to search the given class path and compile the given Clojure namespaces. The compiled code is now useable from C# scripts and will work in play mode and in export. If you edit the Clojure sources you must hit the compile button again.
+
+You may have to toggle away from Unity application and back in order for it to register the newly compiled code. 
+
 API
 ---
 This repository exposes its own API into the Clojure runtime in addition to the API provided by ClojureCLR (under the `clojure.lang.*` namespaces). When possible, our APIs should be preferred over the ClojureCLR APIs because they take into consideration Unity-specific issues.
