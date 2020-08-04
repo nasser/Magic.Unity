@@ -99,6 +99,10 @@ namespace Magic.Unity
             RuntimeBootstrapFlag.SkipSpecChecks = true;
             RuntimeBootstrapFlag._startDefaultServer = false;
             RT.var("clojure.core", "require").invoke(Symbol.intern("magic.api"));
+            // HACK
+            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.edn"));
+            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.walk"));
+            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.data"));
             MagicCompilerNamespaceVar = RT.var("magic.api", "compile-namespace");
             EditorJsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EditorPerfsKey), this);
         }
