@@ -128,9 +128,9 @@ namespace Magic.Unity
 
             if(autogenerateLinkXml)
             {
-                linkXmlEntries = namespaces
-                                    .Where(n => n.Length > 0)
-                                    .Select(n => n + ".clj")
+                linkXmlEntries = Directory.EnumerateFiles(outFolder)
+                                    .Where(n => n.EndsWith(".dll"))
+                                    .Select(n => Path.GetFileName(n).Replace(".dll", ""))
                                     .Concat(DefaultLinkXmlEntries)
                                     .ToList();
             }
