@@ -5,6 +5,8 @@ MAGIC Unity Integration
 
 This repository is built from the MAGIC repository and contains a user interface and API designed to work with the Unity Editor and C# scripting with a particular focus on iOS export.
 
+To get started, clone the [example Unity project](https://github.com/nasser/Magic.Unity-Example) or follow the Overview section to use this repository in an existing Unity project.
+
 Overview
 --------
 This integration offers an AOT based workflow to integrate Clojure into Unity. The basic workflow is as follows:
