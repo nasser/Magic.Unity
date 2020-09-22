@@ -113,7 +113,7 @@
 
 (defn compile-expression [expr roots ctx]
   (println "[compile-expression]" (-> expr (trim 30)) (str *ns*) (ns-aliases *ns*))
-  (let [expr-name (u/gensym (str "<magic>expr"))
+  (let [expr-name (u/gensym "<magic>expr")
         expr-type (.DefineType magic.emission/*module* expr-name abstract-sealed)
         expr-method (.DefineMethod expr-type "eval" public-static)
         expr-ilg (.GetILGenerator expr-method)

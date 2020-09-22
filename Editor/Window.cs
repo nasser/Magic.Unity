@@ -93,6 +93,7 @@ namespace Magic.Unity
         }
 
         static Var MagicCompilerNamespaceVar;
+        static string MagicIL2CPPCLIExePath = null;
 
         void OnEnable()
         {
@@ -105,6 +106,25 @@ namespace Magic.Unity
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.data"));
             MagicCompilerNamespaceVar = RT.var("magic.api", "compile-namespace");
             EditorJsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EditorPerfsKey), this);
+            MagicIL2CPPCLIExePath = FindMagicIL2CPPCLIExePath();
+        }
+
+        private string FindMagicIL2CPPCLIExePath()
+        {
+            if(MagicIL2CPPCLIExePath == null)
+            {
+                var guids = AssetDatabase.FindAssets("Magic.IL2CPP.CLI");
+                foreach (var guid in guids)
+                {
+                    var path = AssetDatabase.GUIDToAssetPath(guid);
+                    if(path.EndsWith(".exe"))
+                    {
+                        MagicIL2CPPCLIExePath = path;
+                    }
+                }
+            }
+            
+            return MagicIL2CPPCLIExePath;
         }
 
         void OnGUI()
@@ -115,6 +135,8 @@ namespace Magic.Unity
 
             GUILayout.Label("Namespaces", EditorStyles.boldLabel);
             RenderStringListView(namespaces);
+
+            EnsureOutFolder(outFolder);
 
             showAdvanced = EditorGUILayout.Foldout(showAdvanced, "Advanced", true, EditorStyles.foldoutHeader);
             if(showAdvanced)
@@ -171,7 +193,6 @@ namespace Magic.Unity
 
         void BuildNamespaces(string buildPath = DefaultOutFolder)
         {
-            EnsureOutFolder();
             if(verbose)
                 Debug.LogFormat("load path {0}", string.Join(",", paths));
             foreach (var ns in namespaces)
@@ -183,7 +204,7 @@ namespace Magic.Unity
             var files = Directory.GetFiles(".", "*.clj.dll");
             foreach (var f in files)
             {
-                Magic.IL2CPP.Patches.AnalyzeAssemblyAndWrite(f);
+                Shell.MonoRun(MagicIL2CPPCLIExePath, f);
                 var finalPath = Path.Combine(buildPath, Path.GetFileName(f));
                 if(File.Exists(finalPath))
                 {

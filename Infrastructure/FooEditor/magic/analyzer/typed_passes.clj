@@ -114,8 +114,8 @@
                :params hinted-params
                :source-method best-method
                type-key this-type))
-      (throw (ex-info (str "No match binding method" {:name name :params (map ast-type params) :candidates (vec candidate-methods)
-                                                     :type-key type-key :this-type this-type :explicit-this? explicit-this?}) {})))))
+      (throw (ex-info "No match binding method" {:name name :params (map ast-type params) :candidates (vec candidate-methods)
+                                                 :type-key type-key :this-type this-type :explicit-this? explicit-this?})))))
 
 (defn analyze-deftype
   [{:keys [op classname fields implements methods] :as ast}]
