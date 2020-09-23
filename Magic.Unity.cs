@@ -30,7 +30,7 @@ namespace Magic.Unity
                     RuntimeBootstrapFlag.CodeSource.InitType,
                     RuntimeBootstrapFlag.CodeSource.FileSystem,
                     RuntimeBootstrapFlag.CodeSource.EmbeddedResource };
-#elif UNITY_IOS
+#elif ENABLE_IL2CPP
                 RuntimeBootstrapFlag.CodeLoadOrder = new[] { RuntimeBootstrapFlag.CodeSource.InitType };
                 RuntimeBootstrapFlag.DisableFileLoad = true;
                 RuntimeBootstrapFlag._doRTPostBootstrap = false;
