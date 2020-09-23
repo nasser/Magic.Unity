@@ -171,6 +171,8 @@ namespace Magic.Unity
 
         private void BuildLinkXml(List<string> linkXmlEntries)
         {
+            if(File.Exists("Assets/link.xml"))
+                File.Delete("Assets/link.xml");
             var linkXml = XmlWriter.Create("Assets/link.xml");
             linkXml.WriteStartElement("linker");
             foreach (var entry in linkXmlEntries)
