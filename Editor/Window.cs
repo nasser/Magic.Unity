@@ -127,6 +127,14 @@ namespace Magic.Unity
             return MagicIL2CPPCLIExePath;
         }
 
+        List<string> GetXmlEntries() {
+            return Directory.EnumerateFiles(outFolder)
+                            .Where(n => n.EndsWith(".dll"))
+                            .Select(n => Path.GetFileName(n).Replace(".dll", ""))
+                            .Concat(DefaultLinkXmlEntries)
+                            .ToList();
+        }
+
         void OnGUI()
         {
             titleContent = new GUIContent("MAGIC Compiler");
@@ -154,18 +162,19 @@ namespace Magic.Unity
 
             if(autogenerateLinkXml)
             {
-                linkXmlEntries = Directory.EnumerateFiles(outFolder)
-                                    .Where(n => n.EndsWith(".dll"))
-                                    .Select(n => Path.GetFileName(n).Replace(".dll", ""))
-                                    .Concat(DefaultLinkXmlEntries)
-                                    .ToList();
+                linkXmlEntries = GetXmlEntries();
+                BuildLinkXml(linkXmlEntries);
             }
 
             EditorGUILayout.Space(20, true);
             if (GUILayout.Button(new GUIContent("Compile", "Compile the namespaces")))
             {
-                BuildLinkXml(linkXmlEntries);
                 BuildNamespaces(outFolder);
+                if(autogenerateLinkXml)
+                {
+                    linkXmlEntries = GetXmlEntries();
+                    BuildLinkXml(linkXmlEntries);
+                }
             }
         }
 
