@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 
+
 using clojure.lang;
 
 using UnityEngine;
@@ -53,7 +54,7 @@ namespace Magic.Unity
         {
             EditorWindow.GetWindow<Window>().Show();
         }
-
+        
         void RenderStringListView(List<string> list)
         {
             var indexToClear = -1;
@@ -100,7 +101,9 @@ namespace Magic.Unity
             RuntimeBootstrapFlag.SkipSpecChecks = true;
             RuntimeBootstrapFlag._startDefaultServer = false;
             RT.var("clojure.core", "require").invoke(Symbol.intern("magic.api"));
-            // HACK
+            // HACK 
+            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.spec.alpha"));
+            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.pprint"));
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.edn"));
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.walk"));
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.data"));
@@ -227,7 +230,7 @@ namespace Magic.Unity
 
         private void BuildNamespace(string ns)
         {
-            if(verbose)
+            if (verbose)
                 Debug.LogFormat("compile {0}", ns);
             MagicCompilerNamespaceVar.invoke(paths, ns);
         }
