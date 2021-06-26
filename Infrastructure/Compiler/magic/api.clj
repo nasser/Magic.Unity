@@ -10,6 +10,7 @@
              [lift-vars :refer [lift-vars]]
              [lift-keywords :refer [lift-keywords]]]
             [magic.emission :refer [*module* fresh-module]]
+            [clojure.main :as main]
             [clojure.string :as string])
   (:import [clojure.lang RT LineNumberingTextReader]
            [System.Reflection MethodAttributes TypeAttributes]
@@ -237,7 +238,7 @@
   (println "[compile-namespace]" namespace)
   (when-let [path (find-file roots namespace)]
     (with-redefs [clojure.core/load-one (fn magic-load-one-fn [lib need-ns require]
-                                          (binding [*ns* *ns*]
+                                          (main/with-bindings
                                             (compile-namespace roots lib)
                                             (dosync
                                              (commute (loaded-libs-ref) conj lib))))]
