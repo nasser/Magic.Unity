@@ -24,6 +24,7 @@ namespace Magic.Unity
             "clojure.core_deftype.clj",
             "clojure.core_print.clj",
             "clojure.core.protocols.clj",
+            "clojure.datafy.clj",
             "clojure.core_proxy.clj",
             "clojure.edn.clj",
             "clojure.genclass.clj",
@@ -107,6 +108,7 @@ namespace Magic.Unity
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.edn"));
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.walk"));
             RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.data"));
+            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.datafy"));
             MagicCompilerNamespaceVar = RT.var("magic.api", "compile-namespace");
             EditorJsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EditorPerfsKey), this);
             MagicIL2CPPCLIExePath = FindMagicIL2CPPCLIExePath();
