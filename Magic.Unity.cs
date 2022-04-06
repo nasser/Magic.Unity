@@ -52,6 +52,22 @@ namespace Magic.Unity
         }
 
         /// <summary>
+        /// Lookup a Clojure var and cast to a known type
+        /// </summary>
+        /// <remarks>
+        /// Useful when the var is known to be a function with type hints.
+        /// Casting to a Magic.Function type in that case avoids boxing.
+        /// </remarks>
+        /// <param name="ns">The namespace of the var</param>
+        /// <param name="name">The name of the var</param>
+        /// <returns></returns>
+        public static T GetVar<T>(string ns, string name)
+        {
+            Boot();
+            return (T)(RT.var(ns, name).deref());
+        }
+
+        /// <summary>
         /// Require a Clojure namespace
         /// </summary>
         /// <param name="ns">The name of the namespace</param>
