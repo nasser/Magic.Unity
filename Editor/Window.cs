@@ -4,9 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-
 using clojure.lang;
-
 using UnityEngine;
 using UnityEditor;
 
@@ -60,7 +58,7 @@ namespace Magic.Unity
         {
             EditorWindow.GetWindow<Window>().Show();
         }
-
+        
         void RenderStringListView(List<string> list)
         {
             var indexToClear = -1;
