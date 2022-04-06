@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Xml;
 
 using clojure.lang;
@@ -46,7 +47,13 @@ namespace Magic.Unity
         [SerializeField] bool autogenerateLinkXml = true;
         [SerializeField] List<string> linkXmlEntries = new List<string>(DefaultLinkXmlEntries);
         [SerializeField] bool showAdvanced = false;
+        [SerializeField] bool showOptimizations = false;
         [SerializeField] bool verbose = false;
+        [SerializeField] bool stronglyTypedInvokes = true;
+        [SerializeField] bool directLinking = true;
+        [SerializeField] bool elideMeta = false;
+        [SerializeField] bool legacyDynamicCallsites = false;
+        [SerializeField] bool emitIL2CPPWorkaround = true;
 
         [MenuItem("MAGIC/Compiler...")]
         static void Init()
@@ -92,19 +99,47 @@ namespace Magic.Unity
             SaveState();
         }
 
+        static Var MagicFlagsStronglyTypedInvokes;
+        static Var MagicFlagsDirectLinking;
+        static Var MagicFlagsElideMeta;
+        static Var MagicFlagsLegacyDynamicCallsites;
+        static Var MagicFlagsEmitIL2CPPWorkaround;
         static Var MagicCompilerNamespaceVar;
+        static Var ClojureLoadPathsVar;
         static string MagicIL2CPPCLIExePath = null;
+
+        static void BootClojure()
+        {
+            var assemblyPath = Path.GetDirectoryName(Assembly.Load("Clojure").Location);
+			foreach(var cljDll in Directory.EnumerateFiles(assemblyPath, "*.clj.dll"))
+			{
+				Assembly.LoadFile(cljDll);
+			}
+
+			RT.Initialize(doRuntimePostBoostrap: false);
+			RT.TryLoadInitType("clojure/core");
+			RT.TryLoadInitType("magic/api");
+
+			RT.var("clojure.core", "*load-fn*").bindRoot(RT.var("clojure.core", "-load"));
+			RT.var("clojure.core", "*eval-form-fn*").bindRoot(RT.var("magic.api", "eval"));
+			RT.var("clojure.core", "*load-file-fn*").bindRoot(RT.var("magic.api", "runtime-load-file"));
+			RT.var("clojure.core", "*compile-file-fn*").bindRoot(RT.var("magic.api", "runtime-compile-file"));
+			RT.var("clojure.core", "*macroexpand-1-fn*").bindRoot(RT.var("magic.api", "runtime-macroexpand-1"));
+
+            MagicFlagsStronglyTypedInvokes = RT.var("magic.flags", "*strongly-typed-invokes*");
+            MagicFlagsDirectLinking = RT.var("magic.flags", "*direct-linking*");
+            MagicFlagsElideMeta = RT.var("magic.flags", "*elide-meta*");
+            MagicFlagsLegacyDynamicCallsites = RT.var("magic.flags", "*legacy-dynamic-callsites*");
+            MagicFlagsEmitIL2CPPWorkaround = RT.var("magic.flags", "*emit-il2cpp-workaround*");
+        }
 
         void OnEnable()
         {
-            RuntimeBootstrapFlag.SkipSpecChecks = true;
-            RuntimeBootstrapFlag._startDefaultServer = false;
-            RT.var("clojure.core", "require").invoke(Symbol.intern("magic.api"));
-            // HACK
-            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.edn"));
-            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.walk"));
-            RT.var("clojure.core", "require").invoke(Symbol.intern("clojure.data"));
+            BootClojure();
+            UnityEngine.Debug.LogFormat("Clojure {0}", RT.var("clojure.core", "clojure-version").invoke());
+            UnityEngine.Debug.LogFormat("MAGIC {0}", RT.var("magic.api", "version").deref());
             MagicCompilerNamespaceVar = RT.var("magic.api", "compile-namespace");
+            ClojureLoadPathsVar = RT.var("clojure.core", "*load-paths*");
             EditorJsonUtility.FromJsonOverwrite(EditorPrefs.GetString(EditorPerfsKey), this);
             MagicIL2CPPCLIExePath = FindMagicIL2CPPCLIExePath();
         }
@@ -145,6 +180,16 @@ namespace Magic.Unity
             RenderStringListView(namespaces);
 
             EnsureOutFolder(outFolder);
+
+            showOptimizations = EditorGUILayout.Foldout(showOptimizations, "Optimizations", true, EditorStyles.foldoutHeader);
+            if(showOptimizations)
+            {
+                stronglyTypedInvokes = EditorGUILayout.Toggle(new GUIContent("Hinted Invocations", "When possible, invoke type hinted Clojure functions through strongly typed invocation interfaces. Avoids boxing value types."), stronglyTypedInvokes);
+                directLinking = EditorGUILayout.Toggle(new GUIContent("Direct Linking", "When possible, invoke type hinted Clojure functions as static methods. Avoids boxing value types and enables funcion inlining."), directLinking);
+                elideMeta = EditorGUILayout.Toggle(new GUIContent("Elide Metadata", "Do not emit metadata. Avoid allocations when creating anonymous functions, but breaks Clojure features that depend on metadata like records."), elideMeta);
+                legacyDynamicCallsites = EditorGUILayout.Toggle(new GUIContent("Legacy Dynamic Callsites", "Use legacy reflection-based dynamic callsites instead. Only enable for debugging. Dynamic call sites up to 30x slower when turned on."), legacyDynamicCallsites);
+                emitIL2CPPWorkaround = EditorGUILayout.Toggle(new GUIContent("Emit IL2CPP Workaround", "Generate bytecode to work around IL2CPP limitations. Must be turned on for MAGIC to work on IL2CPP targets."), emitIL2CPPWorkaround);
+            }
 
             showAdvanced = EditorGUILayout.Foldout(showAdvanced, "Advanced", true, EditorStyles.foldoutHeader);
             if(showAdvanced)
@@ -227,9 +272,33 @@ namespace Magic.Unity
 
         private void BuildNamespace(string ns)
         {
-            if(verbose)
-                Debug.LogFormat("compile {0}", ns);
-            MagicCompilerNamespaceVar.invoke(paths, ns);
+            var options = RT.mapUniqueKeys(RT.keyword(null, "write-files"), true);
+            Var.pushThreadBindings(RT.mapUniqueKeys(
+                MagicFlagsStronglyTypedInvokes, stronglyTypedInvokes,
+                MagicFlagsDirectLinking, directLinking,
+                MagicFlagsElideMeta, elideMeta,
+                MagicFlagsLegacyDynamicCallsites, legacyDynamicCallsites,
+                MagicFlagsEmitIL2CPPWorkaround, emitIL2CPPWorkaround,
+                ClojureLoadPathsVar, paths
+            ));
+            try
+            {
+                if(verbose)
+                {
+                    Debug.LogFormat("compile {0}", ns);
+                    Debug.LogFormat("{0} {1}", MagicFlagsStronglyTypedInvokes, MagicFlagsStronglyTypedInvokes.deref());
+                    Debug.LogFormat("{0} {1}", MagicFlagsDirectLinking, MagicFlagsDirectLinking.deref());
+                    Debug.LogFormat("{0} {1}", MagicFlagsElideMeta, MagicFlagsElideMeta.deref());
+                    Debug.LogFormat("{0} {1}", MagicFlagsLegacyDynamicCallsites, MagicFlagsLegacyDynamicCallsites.deref());
+                    Debug.LogFormat("{0} {1}", MagicFlagsEmitIL2CPPWorkaround, MagicFlagsEmitIL2CPPWorkaround.deref());
+                    Debug.LogFormat("{0} {1}", ClojureLoadPathsVar, ClojureLoadPathsVar.deref());
+                }
+                MagicCompilerNamespaceVar.invoke(ns, options);
+            }
+            finally
+            {
+                Var.popThreadBindings();
+            }
         }
     }
 }
