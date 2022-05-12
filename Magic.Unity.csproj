@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    </PropertyGroup>
+    <PropertyGroup>
+        <NuspecFile>Magic.Unity.nuspec</NuspecFile>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json
+        </RestoreAdditionalProjectSources>
+    </PropertyGroup>
+</Project>
