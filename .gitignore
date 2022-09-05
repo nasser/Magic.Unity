@@ -1,0 +1,11 @@
+# Clojure
+.clj-kondo
+.lsp
+
+# C#
+bin
+obj
+nuget.config
+
+# Mac
+.DS_Store
