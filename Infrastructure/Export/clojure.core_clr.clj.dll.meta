@@ -17,9 +17,10 @@ PluginImporter:
       enabled: 0
       settings:
         Exclude Android: 0
-        Exclude Editor: 1
+        Exclude Editor: 0
         Exclude Linux64: 0
         Exclude OSXUniversal: 0
+        Exclude WebGL: 0
         Exclude Win: 0
         Exclude Win64: 0
   - first:
@@ -35,7 +36,7 @@ PluginImporter:
   - first:
       Editor: Editor
     second:
-      enabled: 0
+      enabled: 1
       settings:
         DefaultValueInitialized: true
   - first:
@@ -55,6 +56,11 @@ PluginImporter:
       settings: {}
   - first:
       Standalone: Win64
+    second:
+      enabled: 1
+      settings: {}
+  - first:
+      WebGL: WebGL
     second:
       enabled: 1
       settings: {}
