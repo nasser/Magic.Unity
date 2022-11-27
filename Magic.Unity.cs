@@ -35,6 +35,8 @@ namespace Magic.Unity
                 RuntimeBootstrapFlag.DisableFileLoad = true;
                 RuntimeBootstrapFlag._doRTPostBootstrap = false;
 #endif
+                RT.Initialize(doRuntimePostBoostrap: false);
+                RT.TryLoadInitType("clojure/core");
                 RequireVar = RT.var("clojure.core", "require");
             }
         }
