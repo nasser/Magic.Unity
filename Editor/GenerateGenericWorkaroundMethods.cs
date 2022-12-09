@@ -26,17 +26,40 @@ namespace Magic.Unity
         static List<MethodDefinition> AllMethods = new List<MethodDefinition>();
         static TypeDefinition MagicRuntimeDelegateHelpers = null;
 
+        static HashSet<AssemblyDefinition> collectAllReferencedAssemblies(AssemblyDefinition assydef, HashSet<AssemblyDefinition> seen = null)
+        {
+            if(seen == null)
+                seen = new HashSet<AssemblyDefinition>();
+            seen.Add(assydef);
+            var resolver = assydef.MainModule.AssemblyResolver as DefaultAssemblyResolver;
+            resolver.AddSearchDirectory("Library/ScriptAssemblies");
+            resolver.AddSearchDirectory(System.IO.Path.GetDirectoryName(typeof(clojure.lang.RT).Assembly.Location));
+            resolver.AddSearchDirectory(System.IO.Path.GetDirectoryName(typeof(string).Assembly.Location));
+            resolver.AddSearchDirectory(System.IO.Path.GetDirectoryName(typeof(UnityEngine.GameObject).Assembly.Location));
+            
+            foreach (var tr in assydef.MainModule.GetTypeReferences())
+            {
+                var resolved = tr.Resolve();
+                if(!seen.Contains(resolved.Module.Assembly))
+                {
+                    collectAllReferencedAssemblies(resolved.Module.Assembly, seen);
+                }
+            }
+
+            return seen;
+        }
+
         public static void Init()
         {
-            AllMethods = AppDomain
-                            .CurrentDomain
-                            .GetAssemblies()
-                            .Select(a => AssemblyDefinition.ReadAssembly(a.Location).MainModule)
-                            .SelectMany(m => m.Types)
-                            .Where(t => t.IsPublic)
-                            .SelectMany(t => t.Methods)
-                            .Where(m => m.IsPublic)
-                            .ToList();
+            var assemblyCSharp = AssemblyDefinition.ReadAssembly("Library/ScriptAssemblies/Assembly-CSharp.dll");
+            var referencedAssemblies = collectAllReferencedAssemblies(assemblyCSharp);
+            UnityEngine.Debug.Log($"[collectAllReferencedAssemblies] {string.Join(",", referencedAssemblies)}");
+
+            AllMethods = referencedAssemblies
+                         .Select(a => a.MainModule)
+                         .SelectMany(m => m.Types)
+                         .SelectMany(t => t.Methods)
+                         .ToList();
 
             MagicRuntimeDelegateHelpers = AssemblyDefinition
                                             .ReadAssembly(typeof(Magic.Runtime).Assembly.Location)
@@ -126,6 +149,15 @@ namespace Magic.Unity
 
         static void MaybeEmitWorkaroundStaticType(AssemblyDefinition assy, IEnumerable<DynamicCallSiteInfo> callSiteInfos)
         {
+            // to make this process idempotent we remove the workaround type if
+            // it exists. this happens when we run this process over the same
+            // assembly multiple times.
+            var existingWorkaroundType = assy.MainModule.Types.Where(t => t.Namespace == "Magic.Unity" && t.Name == "<il2cpp-workaround>").FirstOrDefault();
+            if(existingWorkaroundType != null)
+            {
+                UnityEngine.Debug.LogFormat("[Magic.Unity/GenerateGenericWorkaroundMethods] {1} found existing workaround type, removing {0}", existingWorkaroundType, assy);
+                assy.MainModule.Types.Remove(existingWorkaroundType);
+            }
             var type = new TypeDefinition("Magic.Unity", "<il2cpp-workaround>", TypeAttributes.Public, assy.MainModule.TypeSystem.Object);
             var method = new MethodDefinition("<problematic-generics>", MethodAttributes.Public | MethodAttributes.Static, assy.MainModule.TypeSystem.Void);
             var invocations = 0;
@@ -136,6 +168,7 @@ namespace Magic.Unity
             type.Methods.Add(method);
             foreach (var callSiteInfo in callSiteInfos)
             {
+                UnityEngine.Debug.LogFormat("[Magic.Unity/GenerateGenericWorkaroundMethods] call site name {0}", callSiteInfo.name);
                 var signatures = GetPrecompilationSignatures(callSiteInfo);
                 foreach (var signature in signatures)
                 {
@@ -148,6 +181,10 @@ namespace Magic.Unity
             {
                 // no actual invocations generated, remove type from assembly
                 assy.MainModule.Types.Remove(type);
+            }
+            else
+            {
+                UnityEngine.Debug.LogFormat("[Magic.Unity/GenerateGenericWorkaroundMethods] added il2cpp workaround to {1} {0}", existingWorkaroundType, assy);
             }
         }
 
@@ -164,6 +201,7 @@ namespace Magic.Unity
 
         private static void EmitWorkaroundInvocation(MethodBody body, TypeReference[] signature)
         {
+            UnityEngine.Debug.LogFormat("[Magic.Unity/GenerateGenericWorkaroundMethods] EmitWorkaroundInvocation {0}", string.Join<TypeReference>(",", signature));
             var module = body.Method.Module;
             var arity = signature.Length - 1;
             var name = $"GetMethodDelegateFast{arity:D2}";

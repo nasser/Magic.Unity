@@ -17,6 +17,10 @@ namespace Magic.Unity
         public void OnPreprocessBuild(BuildReport report)
         {
             Debug.Log($"[Magic.Unity] preprocessing build at path {report.summary.outputPath} ({report.summary.platform})");
+            foreach (var file in report.files)
+            {
+                Debug.Log($"[Magic.Unity] file {file.path}");
+            }
 
             if (IsIL2CPPEnabled())
             {

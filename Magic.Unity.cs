@@ -23,17 +23,15 @@ namespace Magic.Unity
             if (!_booted)
             {
                 _booted = true;
-                RuntimeBootstrapFlag._startDefaultServer = false;
-                RuntimeBootstrapFlag.SkipSpecChecks = true;
 #if UNITY_EDITOR
                 RuntimeBootstrapFlag.CodeLoadOrder = new[] {
                     RuntimeBootstrapFlag.CodeSource.InitType,
-                    RuntimeBootstrapFlag.CodeSource.FileSystem,
-                    RuntimeBootstrapFlag.CodeSource.EmbeddedResource };
+                    RuntimeBootstrapFlag.CodeSource.FileSystem
+                };
 #elif ENABLE_IL2CPP
-                RuntimeBootstrapFlag.CodeLoadOrder = new[] { RuntimeBootstrapFlag.CodeSource.InitType };
-                RuntimeBootstrapFlag.DisableFileLoad = true;
-                RuntimeBootstrapFlag._doRTPostBootstrap = false;
+                RuntimeBootstrapFlag.CodeLoadOrder = new[] {
+                    RuntimeBootstrapFlag.CodeSource.InitType
+                };
 #endif
                 RT.Initialize(doRuntimePostBoostrap: false);
                 RT.TryLoadInitType("clojure/core");
