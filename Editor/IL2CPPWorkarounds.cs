@@ -68,7 +68,7 @@ namespace Magic.Unity
         {
             m.Body.SimplifyMacros();
 
-            EliminateUnreachableBranches.RewriteMethod(m);
+            EliminateUnreachableInstructions.RewriteMethod(m);
             GenerateGenericWorkaroundMethods.AnalyzeMethod(m);
 
             m.Body.OptimizeMacros();

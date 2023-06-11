@@ -8,11 +8,6 @@ using Mono.Cecil.Cil;
 
 namespace Magic.Unity
 {
-    public class BytecodeAssumptionViolatedException : Exception
-    {
-        public BytecodeAssumptionViolatedException(string message) : base(message) { }
-    }
-
     public static class GenerateGenericWorkaroundMethods
     {
         struct DynamicCallSiteInfo
