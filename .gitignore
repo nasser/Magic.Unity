@@ -1,5 +1,2 @@
 obj
 bin
-*.clj.meta
-*.nuspec.meta
-*.csproj.meta
