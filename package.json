@@ -1,7 +1,7 @@
 {
     "name": "sr.nas.magic.unity",
-    "version": "0.0.1",
-    "displayName": "Magic.Unity Integration",
+    "version": "1.2.0-beta",
+    "displayName": "MAGIC Unity Integration",
     "description": "The integration of the MAGIC Clojure compiler into Unity",
     "unity": "2021.2",
     "unityRelease": "3f1",
