@@ -1,0 +1,25 @@
+{
+    "name": "sr.nas.magic.unity",
+    "version": "0.0.1",
+    "displayName": "Magic.Unity Integration",
+    "description": "The integration of the MAGIC Clojure compiler into Unity",
+    "unity": "2021.2",
+    "unityRelease": "3f1",
+    "documentationUrl": "https://github.com/magic-clojure/magic",
+    "changelogUrl": "https://github.com/magic-clojure/magic",
+    "licensesUrl": "https://github.com/magic-clojure/magic",
+    "dependencies": {
+        "com.unity.nuget.mono-cecil": "1.11.4"
+    },
+    "keywords": [
+        "lisp",
+        "clojure",
+        "compiler",
+        "magic"
+    ],
+    "author": {
+        "name": "Ramsey Nasser",
+        "email": "ram@nas.sr",
+        "url": "https://nas.sr/"
+    }
+}
