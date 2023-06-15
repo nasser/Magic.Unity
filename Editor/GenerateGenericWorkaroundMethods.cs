@@ -21,7 +21,7 @@ namespace Magic.Unity
         static List<MethodDefinition> AllMethods = new List<MethodDefinition>();
         static TypeDefinition MagicRuntimeDelegateHelpers = null;
 
-        static HashSet<AssemblyDefinition> collectAllReferencedAssemblies(AssemblyDefinition assydef, HashSet<AssemblyDefinition> seen = null)
+        static HashSet<AssemblyDefinition> CollectAllReferencedAssemblies(AssemblyDefinition assydef, HashSet<AssemblyDefinition> seen = null)
         {
             if(seen == null)
                 seen = new HashSet<AssemblyDefinition>();
@@ -39,12 +39,12 @@ namespace Magic.Unity
                     var resolved = tr.Resolve();
                     if(!seen.Contains(resolved.Module.Assembly))
                     {
-                        collectAllReferencedAssemblies(resolved.Module.Assembly, seen);
+                        CollectAllReferencedAssemblies(resolved.Module.Assembly, seen);
                     }
                 }
                 catch(AssemblyResolutionException e)
                 {
-                    UnityEngine.Debug.Log($"[collectAllReferencedAssemblies] Failed to resolve Assembly {e.AssemblyReference.FullName}, skipping");
+                    UnityEngine.Debug.Log($"[CollectAllReferencedAssemblies] Failed to resolve Assembly {e.AssemblyReference.FullName}, skipping");
                 }
             }
 
@@ -54,8 +54,8 @@ namespace Magic.Unity
         public static void Init()
         {
             var assemblyCSharp = AssemblyDefinition.ReadAssembly("Library/ScriptAssemblies/Assembly-CSharp.dll");
-            var referencedAssemblies = collectAllReferencedAssemblies(assemblyCSharp);
-            UnityEngine.Debug.Log($"[collectAllReferencedAssemblies] {string.Join(",", referencedAssemblies)}");
+            var referencedAssemblies = CollectAllReferencedAssemblies(assemblyCSharp);
+            UnityEngine.Debug.Log($"[CollectAllReferencedAssemblies] {string.Join(",", referencedAssemblies)}");
 
             AllMethods = referencedAssemblies
                          .Select(a => a.MainModule)
