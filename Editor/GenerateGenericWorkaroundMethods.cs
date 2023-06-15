@@ -34,10 +34,17 @@ namespace Magic.Unity
             
             foreach (var tr in assydef.MainModule.GetTypeReferences())
             {
-                var resolved = tr.Resolve();
-                if(!seen.Contains(resolved.Module.Assembly))
+                try
                 {
-                    collectAllReferencedAssemblies(resolved.Module.Assembly, seen);
+                    var resolved = tr.Resolve();
+                    if(!seen.Contains(resolved.Module.Assembly))
+                    {
+                        collectAllReferencedAssemblies(resolved.Module.Assembly, seen);
+                    }
+                }
+                catch(AssemblyResolutionException e)
+                {
+                    UnityEngine.Debug.Log($"[collectAllReferencedAssemblies] Failed to resolve Assembly {e.AssemblyReference.FullName}, skipping");
                 }
             }
 
