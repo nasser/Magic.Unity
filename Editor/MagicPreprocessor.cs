@@ -22,12 +22,18 @@ namespace Magic.Unity
                 Debug.Log($"[Magic.Unity] file {file.path}");
             }
 
-            if (IsIL2CPPEnabled())
+            try
             {
-                    Debug.Log("[Magic.Unity] patching for IL2CPP");
-                    IL2CPPWorkarounds.RewriteAssemblies();
+                if (IsIL2CPPEnabled())
+                {
+                        Debug.Log("[Magic.Unity] patching for IL2CPP");
+                        IL2CPPWorkarounds.RewriteAssemblies();
+                }
+                LinkXmlGenerator.BuildLinkXml();
+            } catch (Exception e)
+            {
+                throw new BuildPlayerWindow.BuildMethodException(e.Message);
             }
-            LinkXmlGenerator.BuildLinkXml();
         }
 
         static bool IsIL2CPPEnabled()
