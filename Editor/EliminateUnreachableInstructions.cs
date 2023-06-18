@@ -86,14 +86,19 @@ namespace Magic.Unity
                 return;
 
             UnityEngine.Debug.Log($"[EliminateUnreachableInstructions] {method}");
+            var unreachable = new HashSet<Instruction>();
 
-            // remove all unreachable instructions from method
+            // gather all unreachable instructions from method
             foreach (var instruction in method.Body.Instructions)
                 if (!reachable.Contains(instruction))
-                {
-                    UnityEngine.Debug.Log($"[EliminateUnreachableInstructions]     {instruction}");
-                    method.Body.Instructions.Remove(instruction);
-                }
+                    unreachable.Add(instruction);
+            
+            // remove all unreachable instructions
+            foreach(var instruction in unreachable)
+            {
+                UnityEngine.Debug.Log($"[EliminateUnreachableInstructions] {instruction}");
+                method.Body.Instructions.Remove(instruction);
+            }
         }
     }
 }
