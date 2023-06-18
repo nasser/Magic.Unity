@@ -85,7 +85,7 @@ namespace Magic.Unity
             if (method.Body.Instructions.Count == reachable.Count)
                 return;
 
-            UnityEngine.Debug.Log($"[EliminateUnreachableInstructions] {method}");
+            UnityEngine.Debug.Log($"[Magic.Unity/EliminateUnreachableInstructions] {method}");
             var unreachable = new HashSet<Instruction>();
 
             // gather all unreachable instructions from method
@@ -96,7 +96,7 @@ namespace Magic.Unity
             // remove all unreachable instructions
             foreach(var instruction in unreachable)
             {
-                UnityEngine.Debug.Log($"[EliminateUnreachableInstructions] {instruction}");
+                UnityEngine.Debug.Log($"[Magic.Unity/EliminateUnreachableInstructions] {instruction}");
                 method.Body.Instructions.Remove(instruction);
             }
         }
