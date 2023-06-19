@@ -39,7 +39,14 @@ namespace Magic.Unity
                     var resolved = tr.Resolve();
                     if(!seen.Contains(resolved.Module.Assembly))
                     {
-                        CollectAllReferencedAssemblies(resolved.Module.Assembly, seen);
+                        if(!resolved.Module.Assembly.FullName.StartsWith("UnityEditor"))
+                        {
+                            CollectAllReferencedAssemblies(resolved.Module.Assembly, seen);
+                        }
+                        else
+                        {
+                            UnityEngine.Debug.Log($"[CollectAllReferencedAssemblies] Skip {resolved.Module.Assembly}");
+                        }
                     }
                 }
                 catch(AssemblyResolutionException e)
