@@ -21,6 +21,12 @@ namespace Magic.Unity
         static List<MethodDefinition> AllMethods = new List<MethodDefinition>();
         static TypeDefinition MagicRuntimeDelegateHelpers = null;
 
+        static bool ShouldCollectReferencedAssembly(AssemblyDefinition assy)
+        {
+            return !assy.FullName.StartsWith("Unity") || assy.FullName.StartsWith("UnityEngine");
+
+        }
+
         static HashSet<AssemblyDefinition> CollectAllReferencedAssemblies(AssemblyDefinition assydef, HashSet<AssemblyDefinition> seen = null)
         {
             if(seen == null)
@@ -39,7 +45,7 @@ namespace Magic.Unity
                     var resolved = tr.Resolve();
                     if(!seen.Contains(resolved.Module.Assembly))
                     {
-                        if(!resolved.Module.Assembly.FullName.StartsWith("UnityEditor"))
+                        if(ShouldCollectReferencedAssembly(resolved.Module.Assembly))
                         {
                             CollectAllReferencedAssemblies(resolved.Module.Assembly, seen);
                         }
