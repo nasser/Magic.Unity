@@ -6,6 +6,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEngine;
 using System.Reflection;
 
@@ -13,6 +14,12 @@ namespace Magic.Unity
 {
     public static class IL2CPPWorkarounds
     {
+
+        static bool IsIL2CPPEnabled()
+        {
+            return PlayerSettings.GetScriptingBackend(NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup)) == ScriptingImplementation.IL2CPP;
+        }
+
         public static void RewriteAssemblies()
         {
             var cljAssemblies = AppDomain.CurrentDomain
@@ -43,19 +50,26 @@ namespace Magic.Unity
             {
                 var assy = AssemblyDefinition.ReadAssembly(file, new ReaderParameters { AssemblyResolver = resolver });
                 Debug.LogFormat("[Magic.Unity] processing {0} ({1})", assy.FullName, file);
-                
-                GenerateGenericWorkaroundMethods.StartRewriteAssembly(assy);
-                
-                foreach (var t in assy.MainModule.Types)
+
+                GenerateGenericWorkaroundMethods.MaybeRemoveIL2CPPWorkaround(assy);
+
+                if(IsIL2CPPEnabled())
                 {
-                    foreach (var m in t.Methods)
+                    Debug.LogFormat("[Magic.Unity] {0} adding IL2CPP workarounds", assy.FullName);
+
+                    GenerateGenericWorkaroundMethods.StartRewriteAssembly(assy);
+                    
+                    foreach (var t in assy.MainModule.Types)
                     {
-                        if (m.HasBody)
-                            ProcessMethod(m);
+                        foreach (var m in t.Methods)
+                        {
+                            if (m.HasBody)
+                                ProcessMethod(m);
+                        }
                     }
+                    
+                    GenerateGenericWorkaroundMethods.FinishRewriteAssembly(assy);
                 }
-                
-                GenerateGenericWorkaroundMethods.FinishRewriteAssembly(assy);
 
                 assy.MainModule.Write(outfile);
             }

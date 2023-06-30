@@ -156,7 +156,7 @@ namespace Magic.Unity
             }
         }
 
-        static void MaybeEmitWorkaroundStaticType(AssemblyDefinition assy, IEnumerable<DynamicCallSiteInfo> callSiteInfos)
+        public static void MaybeRemoveIL2CPPWorkaround(AssemblyDefinition assy)
         {
             // to make this process idempotent we remove the workaround type if
             // it exists. this happens when we run this process over the same
@@ -167,6 +167,10 @@ namespace Magic.Unity
                 UnityEngine.Debug.LogFormat("[Magic.Unity/GenerateGenericWorkaroundMethods] {1} found existing workaround type, removing {0}", existingWorkaroundType, assy);
                 assy.MainModule.Types.Remove(existingWorkaroundType);
             }
+        }
+
+        static void MaybeEmitWorkaroundStaticType(AssemblyDefinition assy, IEnumerable<DynamicCallSiteInfo> callSiteInfos)
+        {
             var type = new TypeDefinition("Magic.Unity", "<il2cpp-workaround>", TypeAttributes.Public, assy.MainModule.TypeSystem.Object);
             var method = new MethodDefinition("<problematic-generics>", MethodAttributes.Public | MethodAttributes.Static, assy.MainModule.TypeSystem.Void);
             var invocations = 0;

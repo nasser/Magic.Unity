@@ -24,21 +24,12 @@ namespace Magic.Unity
 
             try
             {
-                if (IsIL2CPPEnabled())
-                {
-                        Debug.Log("[Magic.Unity] patching for IL2CPP");
-                        IL2CPPWorkarounds.RewriteAssemblies();
-                }
+                IL2CPPWorkarounds.RewriteAssemblies();
                 LinkXmlGenerator.BuildLinkXml();
             } catch (Exception e)
             {
                 throw new BuildPlayerWindow.BuildMethodException(e.Message);
             }
-        }
-
-        static bool IsIL2CPPEnabled()
-        {
-            return PlayerSettings.GetScriptingBackend(EditorUserBuildSettings.selectedBuildTargetGroup) == ScriptingImplementation.IL2CPP;
         }
     }
 }
